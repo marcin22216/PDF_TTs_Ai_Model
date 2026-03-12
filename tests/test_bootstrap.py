@@ -48,3 +48,15 @@ def test_ensure_runtime_dependencies_raises_without_auto_install(monkeypatch) ->
 
     with pytest.raises(RuntimeError):
         bootstrap.ensure_runtime_dependencies(auto_install=False)
+
+
+def test_cuda_provider_detection_true(monkeypatch) -> None:
+    monkeypatch.setattr(
+        bootstrap, "get_onnxruntime_providers", lambda: ["CPUExecutionProvider", "CUDAExecutionProvider"]
+    )
+    assert bootstrap.is_cuda_provider_available() is True
+
+
+def test_cuda_provider_detection_false(monkeypatch) -> None:
+    monkeypatch.setattr(bootstrap, "get_onnxruntime_providers", lambda: ["CPUExecutionProvider"])
+    assert bootstrap.is_cuda_provider_available() is False

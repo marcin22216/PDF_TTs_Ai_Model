@@ -38,6 +38,8 @@ python -m pdf_tts_ai.cli `
   --pdf .\input.pdf `
   --out .\out `
   --model .\models\voice.onnx `
+  --piper-exe .\.venv\Scripts\piper.exe `
+  --cuda `
   --min-chars 700 `
   --max-chars 1600
 ```
@@ -55,11 +57,28 @@ python -m pdf_tts_ai.gui
 GUI pozwala wybrac:
 - PDF
 - model Piper (`.onnx`)
+- plik `piper.exe` (lub `piper` z PATH)
+- opcje GPU przez checkbox `Use GPU (CUDA)`
 - katalog bazowy zapisu
 
 Aplikacja tworzy automatycznie folder nazwany jak PDF i zapisuje tam caly wynik.
+W trakcie pracy pokazuje procentowy pasek postepu i aktualny etap.
 
 ## Auto-check dependencies
 - Przy starcie CLI i GUI aplikacja sprawdza wymagane paczki Pythona.
 - Jesli czegos brakuje, uruchamia automatycznie `pip install` dla brakujacych elementow.
 - Dla `piper` wyswietlane jest ostrzezenie, jesli nie ma go w `PATH`.
+
+## GPU setup (CUDA)
+Domyslnie `piper-tts` instaluje CPU `onnxruntime`. Aby uruchomic realne GPU:
+
+```powershell
+python -m pip uninstall -y onnxruntime
+python -m pip install onnxruntime-gpu
+python -c "import onnxruntime as ort; print(ort.get_available_providers())"
+```
+
+Oczekiwany provider: `CUDAExecutionProvider`.
+W aplikacji:
+- CLI: dodaj `--cuda`
+- GUI: zaznacz `Use GPU (CUDA)`

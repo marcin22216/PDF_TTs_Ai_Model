@@ -3,6 +3,7 @@ from uuid import uuid4
 
 import pytest
 
+import pdf_tts_ai.service as service
 from pdf_tts_ai.service import JobRequest, run_job, validate_request
 
 
@@ -30,6 +31,19 @@ def test_validate_request_rejects_non_pdf_file() -> None:
         validate_request(request)
 
 
+def test_validate_request_rejects_cuda_when_provider_missing(monkeypatch) -> None:
+    work = _work_dir()
+    pdf = work / "input.pdf"
+    model = work / "voice.onnx"
+    pdf.write_bytes(b"%PDF-1.4")
+    model.write_text("x", encoding="utf-8")
+    request = JobRequest(pdf_path=pdf, output_base_dir=work, model_path=model, use_cuda=True)
+
+    monkeypatch.setattr(service, "is_cuda_provider_available", lambda: False)
+    with pytest.raises(RuntimeError):
+        validate_request(request)
+
+
 def test_run_job_builds_pdf_named_output_dir() -> None:
     work = _work_dir()
     pdf = work / "Dokument testowy.pdf"
@@ -49,10 +63,48 @@ def test_run_job_builds_pdf_named_output_dir() -> None:
         captured["tts_kwargs"] = kwargs
         return DummyTTS()
 
-    request = JobRequest(pdf_path=pdf, output_base_dir=work / "out_base", model_path=model)
+    request = JobRequest(
+        pdf_path=pdf,
+        output_base_dir=work / "out_base",
+        model_path=model,
+        piper_exe="C:\\tools\\piper.exe",
+    )
     outputs = run_job(request, runner=fake_runner, tts_factory=fake_tts_factory)
 
     assert captured["out_dir"].name == "Dokument_testowy"
     assert captured["pdf_path"] == pdf
     assert captured["tts_engine_type"] == "DummyTTS"
+    assert captured["tts_kwargs"]["piper_exe"] == "C:\\tools\\piper.exe"
+    assert captured["tts_kwargs"]["use_cuda"] is False
     assert outputs["merged_audio"].name == "full.wav"
+
+
+def test_run_job_passes_progress_callback() -> None:
+    work = _work_dir()
+    pdf = work / "Dokument.pdf"
+    model = work / "voice.onnx"
+    pdf.write_bytes(b"%PDF-1.4")
+    model.write_text("dummy", encoding="utf-8")
+
+    captured = {"has_callback": False}
+
+    def fake_runner(*, config, tts_engine, progress_callback=None):
+        captured["has_callback"] = callable(progress_callback)
+        if progress_callback:
+            progress_callback(1, "init")
+        return {"manifest": config.out_dir / "manifest.json", "merged_audio": config.out_dir / "full.wav"}
+
+    def fake_tts_factory(**kwargs):
+        return DummyTTS()
+
+    events: list[tuple[int, str]] = []
+    request = JobRequest(pdf_path=pdf, output_base_dir=work / "out_base", model_path=model)
+    run_job(
+        request,
+        runner=fake_runner,
+        tts_factory=fake_tts_factory,
+        progress_callback=lambda p, s: events.append((p, s)),
+    )
+
+    assert captured["has_callback"] is True
+    assert events == [(1, "init")]

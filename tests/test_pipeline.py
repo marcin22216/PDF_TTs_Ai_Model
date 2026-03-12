@@ -56,3 +56,23 @@ def test_run_pipeline_creates_manifest_and_audio() -> None:
     assert data["chunks"]
     indices = [c["chunk_index"] for c in data["chunks"]]
     assert indices == sorted(indices)
+
+
+def test_run_pipeline_reports_progress() -> None:
+    work_dir = _local_work_dir()
+    pdf_path = work_dir / "sample.pdf"
+    out_dir = work_dir / "out"
+    _create_pdf(pdf_path)
+    events: list[tuple[int, str]] = []
+
+    config = PipelineConfig(pdf_path=pdf_path, out_dir=out_dir, min_chars=10, max_chars=40)
+    run_pipeline(
+        config=config,
+        tts_engine=DummyTTS(),
+        progress_callback=lambda percent, stage: events.append((percent, stage)),
+    )
+
+    assert events
+    assert events[0][0] == 0
+    assert events[-1][0] == 100
+    assert any("Synthesizing chunk" in stage for _, stage in events)

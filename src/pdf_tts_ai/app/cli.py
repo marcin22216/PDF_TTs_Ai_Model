@@ -11,6 +11,7 @@ def build_parser() -> ArgumentParser:
     parser.add_argument("--out", type=Path, required=True, help="Output base directory")
     parser.add_argument("--model", type=Path, required=True, help="Path to Piper model file")
     parser.add_argument("--piper-exe", default="piper", help="Piper executable path")
+    parser.add_argument("--cuda", action="store_true", help="Use GPU (CUDA) in Piper")
     parser.add_argument("--min-chars", type=int, default=700)
     parser.add_argument("--max-chars", type=int, default=1600)
     parser.add_argument("--merged-name", default="full.wav")
@@ -21,17 +22,17 @@ def build_parser() -> ArgumentParser:
 
 def main() -> None:
     ensure_runtime_dependencies(auto_install=True)
-    if not is_piper_available():
-        print("Warning: 'piper' executable not found in PATH. Use --piper-exe if needed.")
-
     parser = build_parser()
     args = parser.parse_args()
+    if args.piper_exe == "piper" and not is_piper_available():
+        print("Warning: 'piper' executable not found in PATH. Use --piper-exe if needed.")
 
     request = JobRequest(
         pdf_path=args.pdf,
         output_base_dir=args.out,
         model_path=args.model,
         piper_exe=args.piper_exe,
+        use_cuda=args.cuda,
         min_chars=args.min_chars,
         max_chars=args.max_chars,
         merged_filename=args.merged_name,

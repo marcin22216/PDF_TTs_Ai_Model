@@ -43,3 +43,19 @@ def ensure_runtime_dependencies(*, auto_install: bool = True) -> None:
 
 def is_piper_available() -> bool:
     return shutil.which("piper") is not None
+
+
+def get_onnxruntime_providers() -> list[str]:
+    try:
+        ort = importlib.import_module("onnxruntime")
+    except ImportError:
+        return []
+    try:
+        providers = ort.get_available_providers()
+    except Exception:
+        return []
+    return list(providers)
+
+
+def is_cuda_provider_available() -> bool:
+    return "CUDAExecutionProvider" in get_onnxruntime_providers()
