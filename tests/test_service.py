@@ -128,7 +128,7 @@ def test_run_job_raises_when_ffmpeg_unavailable_for_compressed_formats(monkeypat
         return DummyTTS()
 
     monkeypatch.setattr(service, "ensure_onnxruntime_for_hardware", lambda auto_install=True: None)
-    monkeypatch.setattr(service, "is_ffmpeg_available", lambda ffmpeg_exe="ffmpeg": False)
+    monkeypatch.setattr(service, "resolve_ffmpeg_exe", lambda preferred="ffmpeg", auto_install=True: None)
     monkeypatch.setattr(service, "resolve_selected_pages", lambda request: [1])
 
     request = JobRequest(

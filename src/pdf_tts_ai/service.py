@@ -6,7 +6,7 @@ from .bootstrap import (
     ensure_onnxruntime_for_hardware,
     has_nvidia_gpu,
     is_cuda_provider_available,
-    is_ffmpeg_available,
+    resolve_ffmpeg_exe,
 )
 from .config import PipelineConfig
 from .extractor import extract_toc, get_page_count
@@ -88,11 +88,15 @@ def run_job(
 
     use_cuda = request.use_cuda and has_nvidia_gpu() and is_cuda_provider_available()
     output_format = request.output_format.lower()
-    if output_format != "wav" and not is_ffmpeg_available(request.ffmpeg_exe):
-        raise RuntimeError(
-            f"Output format '{output_format}' requires ffmpeg. "
-            f"Install ffmpeg or switch output format to 'wav'."
-        )
+    ffmpeg_exe = request.ffmpeg_exe
+    if output_format != "wav":
+        resolved_ffmpeg = resolve_ffmpeg_exe(preferred=request.ffmpeg_exe, auto_install=True)
+        if not resolved_ffmpeg:
+            raise RuntimeError(
+                f"Output format '{output_format}' requires ffmpeg. "
+                f"Install ffmpeg or switch output format to 'wav'."
+            )
+        ffmpeg_exe = resolved_ffmpeg
 
     out_dir = build_document_output_dir(request.output_base_dir, request.pdf_path)
     selected_pages = resolve_selected_pages(request)
@@ -106,7 +110,7 @@ def run_job(
         output_format=output_format,
         audio_bitrate=request.audio_bitrate,
         delete_temp_wav_chunks=request.delete_temp_wav_chunks,
-        ffmpeg_exe=request.ffmpeg_exe,
+        ffmpeg_exe=ffmpeg_exe,
     )
     tts_engine = tts_factory(
         model_path=request.model_path,

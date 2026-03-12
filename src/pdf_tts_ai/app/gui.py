@@ -6,10 +6,8 @@ from tkinter import filedialog, messagebox, ttk
 
 from .bootstrap import (
     ensure_runtime_dependencies,
-    has_nvidia_gpu,
-    is_cuda_provider_available,
-    is_ffmpeg_available,
     is_piper_available,
+    resolve_ffmpeg_exe,
 )
 from ..service import JobRequest, list_toc_entries, run_job
 
@@ -234,23 +232,21 @@ class PdfTtsApp:
         try:
             self._refresh_toc_state()
             use_cuda = self.use_cuda_var.get()
-            if use_cuda and not has_nvidia_gpu():
-                self._append_log("CUDA requested but NVIDIA GPU not detected. Falling back to CPU.")
-                use_cuda = False
-            elif use_cuda and not is_cuda_provider_available():
-                self._append_log("CUDA requested but CUDAExecutionProvider unavailable. Falling back to CPU.")
-                use_cuda = False
 
             output_format = self.format_var.get().lower()
-            if output_format != "wav" and not is_ffmpeg_available():
-                messagebox.showerror(
-                    "Missing ffmpeg",
-                    (
-                        f"Selected output format '{output_format}' requires ffmpeg.\n"
-                        "Install ffmpeg or switch output format to WAV."
-                    ),
-                )
-                return
+            ffmpeg_exe = "ffmpeg"
+            if output_format != "wav":
+                resolved_ffmpeg = resolve_ffmpeg_exe(preferred="ffmpeg", auto_install=True)
+                if not resolved_ffmpeg:
+                    messagebox.showerror(
+                        "Missing ffmpeg",
+                        (
+                            f"Selected output format '{output_format}' requires ffmpeg.\n"
+                            "Install ffmpeg or switch output format to WAV."
+                        ),
+                    )
+                    return
+                ffmpeg_exe = resolved_ffmpeg
 
             request = JobRequest(
                 pdf_path=Path(self.pdf_var.get()),
@@ -263,6 +259,7 @@ class PdfTtsApp:
                 output_format=output_format,
                 audio_bitrate=self.bitrate_var.get(),
                 delete_temp_wav_chunks=self.delete_chunks_var.get(),
+                ffmpeg_exe=ffmpeg_exe,
                 min_chars=int(self.min_chars_var.get()),
                 max_chars=int(self.max_chars_var.get()),
             )
