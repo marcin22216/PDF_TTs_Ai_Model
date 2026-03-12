@@ -48,6 +48,21 @@ Build a local app that:
   - `--help` works.
   - Required args validation.
 
+### Step 6 - GUI v1 + output policy
+- Deliverable: simple local GUI with PDF/model/output selection.
+- Output policy: always save into `<selected_base_dir>/<pdf_name>/`.
+- Gate tests:
+  - Output directory name is derived from PDF name.
+  - Service layer validates inputs and passes normalized output path to pipeline.
+
+### Step 7 - Dependency bootstrap
+- Deliverable: runtime dependency check at CLI/GUI startup.
+- Behavior: if required Python package is missing, auto-install it.
+- Gate tests:
+  - Missing dependency is detected.
+  - Auto-install path is called.
+  - Non-auto-install mode raises clear error.
+
 ## MVP Scope (Now)
 - Text PDFs only (no OCR yet).
 - Piper as TTS backend.

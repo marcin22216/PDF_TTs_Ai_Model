@@ -10,3 +10,4 @@ tests_runtime/
 pytest-cache-files-*/
 
 *.egg-info/
+.venv/
