@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdf-tts-ai-model"
+version = "0.1.0"
+description = "Local PDF to speech pipeline"
+requires-python = ">=3.10"
+dependencies = [
+  "PyMuPDF>=1.24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q -p no:cacheprovider"
