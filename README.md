@@ -26,6 +26,11 @@ python -m pip install -e .[dev]
 
 `requirements.txt` zawiera runtime dependencies dla prostego onboardingu.
 
+## Pobieranie modelu
+Modeli nie trzymamy w repozytorium Git. Pobierz model lokalnie:
+- dwuklik: `models\download_gosia.bat`
+- terminal: `powershell -ExecutionPolicy Bypass -File .\models\download_gosia.ps1 -OutDir .\models`
+
 ## Testy
 ```powershell
 pytest
