@@ -1,6 +1,7 @@
 # PDF_TTs_Ai_Model
 
 Lokalny pipeline PDF -> audio (TTS), z naciskiem na poprawna kolejnosc i logiczne chunkowanie.
+Szybki start po pobraniu ZIP: `README_PL_START.md`.
 
 ## Struktura
 - `docs/IMPLEMENTATION_PLAN.md` - plan etapow i gate testow.
