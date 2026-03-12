@@ -15,7 +15,7 @@ pytest-cache-files-*/
 .venv/
 out*/
 models/*
-!models/download_gosia.ps1
-!models/download_gosia.bat
+!models/download_model.ps1
+!models/download_model.bat
 !models/README_MODELS.txt
 local_data/

@@ -35,7 +35,7 @@ python -m pip install -r requirements.txt
 ## 6. Pobierz model TTS (Piper)
 Najszybciej:
 ```powershell
-.\models\download_gosia.bat
+.\models\download_model.bat
 ```
 
 Skrypt uruchomi menu wyboru:

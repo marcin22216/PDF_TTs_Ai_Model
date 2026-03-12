@@ -4,13 +4,13 @@ Ten katalog nie przechowuje modelu w Git.
 Model pobierasz lokalnie skryptem z menu:
 
 1) Dwuklik:
-   download_gosia.bat
+   download_model.bat
 
 2) Terminal PowerShell:
-   powershell -ExecutionPolicy Bypass -File .\models\download_gosia.ps1 -OutDir .\models
+   powershell -ExecutionPolicy Bypass -File .\models\download_model.ps1 -OutDir .\models
 
 3) Terminal z presetem (bez menu):
-   powershell -ExecutionPolicy Bypass -File .\models\download_gosia.ps1 -OutDir .\models -Preset 1
+   powershell -ExecutionPolicy Bypass -File .\models\download_model.ps1 -OutDir .\models -Preset 1
    (Presety: 1=PL Gosia, 2=EN Amy, 3=EN Joe, 4=DE Eva K, 5=DE Thorsten)
 
 Skrypt obsluguje:

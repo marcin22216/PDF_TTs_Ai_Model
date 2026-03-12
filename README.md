@@ -29,9 +29,9 @@ python -m pip install -r requirements.txt
 
 ## Pobieranie modelu
 Modeli nie trzymamy w repozytorium Git. Pobierz model lokalnie:
-- dwuklik: `models\download_gosia.bat` (menu wyboru jezyka/glosu)
-- terminal: `powershell -ExecutionPolicy Bypass -File .\models\download_gosia.ps1 -OutDir .\models`
-- terminal bez menu: `powershell -ExecutionPolicy Bypass -File .\models\download_gosia.ps1 -OutDir .\models -Preset 1`
+- dwuklik: `models\download_model.bat` (menu wyboru jezyka/glosu)
+- terminal: `powershell -ExecutionPolicy Bypass -File .\models\download_model.ps1 -OutDir .\models`
+- terminal bez menu: `powershell -ExecutionPolicy Bypass -File .\models\download_model.ps1 -OutDir .\models -Preset 1`
 
 ## Testy
 ```powershell
