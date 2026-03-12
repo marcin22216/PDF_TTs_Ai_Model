@@ -2,6 +2,8 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.wav
+*.pdf
 
 .pytest_cache/
 .tmp/
@@ -11,3 +13,6 @@ pytest-cache-files-*/
 
 *.egg-info/
 .venv/
+out*/
+models/
+local_data/
