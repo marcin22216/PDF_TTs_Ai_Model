@@ -3,6 +3,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$OutDir = $OutDir.Trim().Trim('"')
 
 $resolvedOutDir = Resolve-Path $OutDir -ErrorAction SilentlyContinue
 if (-not $resolvedOutDir) {
