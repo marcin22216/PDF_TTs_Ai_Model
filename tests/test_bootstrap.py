@@ -1,4 +1,5 @@
 import importlib
+import shutil
 
 import pytest
 
@@ -60,3 +61,8 @@ def test_cuda_provider_detection_true(monkeypatch) -> None:
 def test_cuda_provider_detection_false(monkeypatch) -> None:
     monkeypatch.setattr(bootstrap, "get_onnxruntime_providers", lambda: ["CPUExecutionProvider"])
     assert bootstrap.is_cuda_provider_available() is False
+
+
+def test_is_ffmpeg_available(monkeypatch) -> None:
+    monkeypatch.setattr(shutil, "which", lambda name: "C:\\ffmpeg\\ffmpeg.exe" if name == "ffmpeg" else None)
+    assert bootstrap.is_ffmpeg_available() is True

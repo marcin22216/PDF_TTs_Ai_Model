@@ -1,5 +1,5 @@
 from pdf_tts_ai.models import TextBlock
-from pdf_tts_ai.segmenter import build_chunks
+from pdf_tts_ai.segmenter import build_chunks, split_sentences
 
 
 def test_build_chunks_respects_limits_and_order() -> None:
@@ -16,3 +16,10 @@ def test_build_chunks_respects_limits_and_order() -> None:
     assert all(c.text[-1] in ".!?" or len(c.text) == 40 for c in chunks)
     assert chunks[0].page_start == 1
     assert chunks[-1].page_end == 2
+
+
+def test_split_sentences_adds_pause_after_heading_line() -> None:
+    text = "Rozdzial pierwszy\nTo jest pierwsze zdanie. To jest drugie."
+    sentences = split_sentences(text)
+    assert sentences[0] == "Rozdzial pierwszy."
+    assert sentences[1].startswith("To jest pierwsze zdanie.")

@@ -9,3 +9,7 @@ class PipelineConfig:
     min_chars: int = 700
     max_chars: int = 1600
     merged_filename: str = "full.wav"
+    output_format: str = "wav"
+    audio_bitrate: str = "64k"
+    delete_temp_wav_chunks: bool = True
+    ffmpeg_exe: str = "ffmpeg"

@@ -76,3 +76,23 @@ def test_run_pipeline_reports_progress() -> None:
     assert events[0][0] == 0
     assert events[-1][0] == 100
     assert any("Synthesizing chunk" in stage for _, stage in events)
+
+
+def test_run_pipeline_deletes_chunks_when_configured() -> None:
+    work_dir = _local_work_dir()
+    pdf_path = work_dir / "sample.pdf"
+    out_dir = work_dir / "out"
+    _create_pdf(pdf_path)
+
+    config = PipelineConfig(
+        pdf_path=pdf_path,
+        out_dir=out_dir,
+        min_chars=20,
+        max_chars=80,
+        delete_temp_wav_chunks=True,
+    )
+    outputs = run_pipeline(config=config, tts_engine=DummyTTS())
+
+    chunks = list(outputs["chunks_dir"].glob("*.wav"))
+    assert chunks == []
+    assert outputs["merged_audio"].exists()

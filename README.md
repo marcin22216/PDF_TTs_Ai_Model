@@ -22,14 +22,16 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -U pip
 python -m pip install -e .[dev]
+python -m pip install -r requirements.txt
 ```
 
 `requirements.txt` zawiera runtime dependencies dla prostego onboardingu.
 
 ## Pobieranie modelu
 Modeli nie trzymamy w repozytorium Git. Pobierz model lokalnie:
-- dwuklik: `models\download_gosia.bat`
+- dwuklik: `models\download_gosia.bat` (menu wyboru jezyka/glosu)
 - terminal: `powershell -ExecutionPolicy Bypass -File .\models\download_gosia.ps1 -OutDir .\models`
+- terminal bez menu: `powershell -ExecutionPolicy Bypass -File .\models\download_gosia.ps1 -OutDir .\models -Preset 1`
 
 ## Testy
 ```powershell
@@ -45,6 +47,8 @@ python -m pdf_tts_ai.cli `
   --out .\out `
   --model .\models\voice.onnx `
   --piper-exe .\.venv\Scripts\piper.exe `
+  --format mp3 `
+  --bitrate 64k `
   --cuda `
   --min-chars 700 `
   --max-chars 1600
@@ -62,8 +66,11 @@ python -m pdf_tts_ai.gui
 
 GUI pozwala wybrac:
 - PDF
-- model Piper (`.onnx`)
+- model Piper (`.onnx`) - domyslnie podpowiadana jest sciezka `models\pl_PL-gosia-medium.onnx`
 - plik `piper.exe` (lub `piper` z PATH)
+- format wyjsciowy audio (`wav/mp3/m4a/ogg`)
+- bitrate dla formatow kompresowanych
+- opcje usuwania tymczasowych chunkow WAV
 - opcje GPU przez checkbox `Use GPU (CUDA)`
 - katalog bazowy zapisu
 
@@ -88,3 +95,7 @@ Oczekiwany provider: `CUDAExecutionProvider`.
 W aplikacji:
 - CLI: dodaj `--cuda`
 - GUI: zaznacz `Use GPU (CUDA)`
+
+Projekt ma bezpieczny fallback:
+- gdy brak NVIDIA/CUDA provider, automatycznie przechodzi na CPU
+- gdy brak `ffmpeg`, formaty kompresowane przechodza na `wav`

@@ -29,10 +29,21 @@ python -m venv .venv
 ```powershell
 python -m pip install -U pip
 python -m pip install -e .[dev]
-python -m pip install piper-tts pathvalidate
+python -m pip install -r requirements.txt
 ```
 
-## 6. Pobierz polski model TTS (Piper)
+## 6. Pobierz model TTS (Piper)
+Najszybciej:
+```powershell
+.\models\download_gosia.bat
+```
+
+Skrypt uruchomi menu wyboru:
+- Polski (Gosia)
+- Angielski (Amy/Joe)
+- Niemiecki (Eva K/Thorsten)
+
+Alternatywnie recznie:
 ```powershell
 New-Item -ItemType Directory -Force .\models | Out-Null
 Invoke-WebRequest -Uri "https://huggingface.co/rhasspy/piper-voices/resolve/main/pl/pl_PL/gosia/medium/pl_PL-gosia-medium.onnx" -OutFile ".\models\pl_PL-gosia-medium.onnx"
@@ -58,9 +69,11 @@ python -m pdf_tts_ai.gui
 
 W GUI ustaw:
 - `PDF file` - plik PDF
-- `Piper model` - `.\models\pl_PL-gosia-medium.onnx`
+- `Piper model` - domyslnie podpowiada `.\models\pl_PL-gosia-medium.onnx`
 - `Piper executable` - `.\.venv\Scripts\piper.exe`
 - `Output base dir` - katalog bazowy, gdzie maja byc wyniki
+- `Output format` - np. `mp3` (mniejszy plik)
+- `Bitrate` - np. `64k` lub `96k`
 - opcjonalnie `Use GPU (CUDA)` (patrz sekcja GPU)
 
 Kliknij `Start`.
@@ -85,7 +98,7 @@ Domyslnie aplikacja dziala na CPU. Zeby uruchomic GPU:
 
 ```powershell
 python -m pip uninstall -y onnxruntime
-python -m pip install onnxruntime-gpu
+python -m pip install -r requirements-gpu.txt
 python -c "import onnxruntime as ort; print(ort.get_available_providers())"
 ```
 
@@ -100,7 +113,9 @@ Potem:
 - `piper executable not found`:
   ustaw `Piper executable` na `.\.venv\Scripts\piper.exe`.
 - `CUDAExecutionProvider is unavailable`:
-  nie ma aktywnego runtime GPU, zrob kroki z sekcji GPU.
+  nie ma aktywnego runtime GPU, zrob kroki z sekcji GPU (albo aplikacja przejdzie na CPU).
+- `ffmpeg not found`:
+  formaty `mp3/m4a/ogg` wymagaja ffmpeg; bez ffmpeg aplikacja zrobi fallback do WAV.
 - bledy instalacji pip:
   uruchom PowerShell jako zwykly user, sprawdz internet i powtorz komendy.
 

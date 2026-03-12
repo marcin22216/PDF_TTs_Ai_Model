@@ -1,10 +1,11 @@
 from pathlib import Path
+import subprocess
 from uuid import uuid4
 import wave
 
 import pytest
 
-from pdf_tts_ai.audio import merge_wav_files
+from pdf_tts_ai.audio import merge_wav_files, transcode_audio
 
 
 def _write_wav(path: Path, framerate: int = 22050, duration_frames: int = 2205) -> None:
@@ -47,3 +48,32 @@ def test_merge_wav_files_rejects_incompatible_files() -> None:
 
     with pytest.raises(ValueError):
         merge_wav_files([a, b], out)
+
+
+def test_transcode_audio_builds_ffmpeg_command(monkeypatch) -> None:
+    captured = {}
+
+    def fake_run(cmd, **kwargs):
+        captured["cmd"] = cmd
+        captured["kwargs"] = kwargs
+        return None
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    transcode_audio(Path("in.wav"), Path("out.mp3"), output_format="mp3", bitrate="64k", ffmpeg_exe="ffmpeg")
+    assert captured["cmd"][:4] == ["ffmpeg", "-y", "-i", "in.wav"]
+    assert "libmp3lame" in captured["cmd"]
+
+
+def test_transcode_audio_raises_when_ffmpeg_missing(monkeypatch) -> None:
+    def fake_run(*args, **kwargs):
+        raise FileNotFoundError("ffmpeg not found")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    with pytest.raises(RuntimeError):
+        transcode_audio(
+            Path("in.wav"),
+            Path("out.ogg"),
+            output_format="ogg",
+            bitrate="64k",
+            ffmpeg_exe="ffmpeg",
+        )

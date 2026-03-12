@@ -2,7 +2,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from .bootstrap import is_cuda_provider_available
+from .bootstrap import (
+    ensure_onnxruntime_for_hardware,
+    has_nvidia_gpu,
+    is_cuda_provider_available,
+    is_ffmpeg_available,
+)
 from .config import PipelineConfig
 from .paths import build_document_output_dir
 from .pipeline import run_pipeline
@@ -16,6 +21,10 @@ class JobRequest:
     model_path: Path
     piper_exe: str = "piper"
     use_cuda: bool = False
+    output_format: str = "wav"
+    audio_bitrate: str = "64k"
+    delete_temp_wav_chunks: bool = True
+    ffmpeg_exe: str = "ffmpeg"
     min_chars: int = 700
     max_chars: int = 1600
     merged_filename: str = "full.wav"
@@ -34,11 +43,8 @@ def validate_request(request: JobRequest) -> None:
         raise ValueError("min_chars and max_chars must be positive")
     if request.min_chars > request.max_chars:
         raise ValueError("min_chars cannot exceed max_chars")
-    if request.use_cuda and not is_cuda_provider_available():
-        raise RuntimeError(
-            "CUDA requested, but CUDAExecutionProvider is unavailable in onnxruntime. "
-            "Install onnxruntime-gpu and ensure NVIDIA drivers/CUDA runtime are correctly set."
-        )
+    if request.output_format.lower() not in {"wav", "mp3", "m4a", "ogg"}:
+        raise ValueError("output_format must be one of: wav, mp3, m4a, ogg")
 
 
 def run_job(
@@ -49,6 +55,13 @@ def run_job(
     progress_callback: Callable[[int, str], None] | None = None,
 ) -> dict[str, Path]:
     validate_request(request)
+    ensure_onnxruntime_for_hardware(auto_install=True)
+
+    use_cuda = request.use_cuda and has_nvidia_gpu() and is_cuda_provider_available()
+    output_format = request.output_format.lower()
+    if output_format != "wav" and not is_ffmpeg_available(request.ffmpeg_exe):
+        output_format = "wav"
+
     out_dir = build_document_output_dir(request.output_base_dir, request.pdf_path)
     config = PipelineConfig(
         pdf_path=request.pdf_path,
@@ -56,11 +69,15 @@ def run_job(
         min_chars=request.min_chars,
         max_chars=request.max_chars,
         merged_filename=request.merged_filename,
+        output_format=output_format,
+        audio_bitrate=request.audio_bitrate,
+        delete_temp_wav_chunks=request.delete_temp_wav_chunks,
+        ffmpeg_exe=request.ffmpeg_exe,
     )
     tts_engine = tts_factory(
         model_path=request.model_path,
         piper_exe=request.piper_exe,
-        use_cuda=request.use_cuda,
+        use_cuda=use_cuda,
         speaker_id=request.speaker_id,
         length_scale=request.length_scale,
     )
